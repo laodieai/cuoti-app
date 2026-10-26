@@ -16,7 +16,9 @@ python3 -m http.server 8123
 # 访问 http://localhost:8123
 ```
 
-手机和电脑同一 Wi-Fi 时，手机浏览器访问 `http://<电脑局域网IP>:8123`。
+**线上地址（手机随时访问）**：https://laodieai.github.io/cuoti-app/
+
+GitHub Pages 部署，随 main 分支自动更新。手机和电脑同一 Wi-Fi 时也可本地访问 `http://<电脑局域网IP>:8123`。
 
 ## 数据
 
