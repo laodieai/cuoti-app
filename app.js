@@ -124,6 +124,10 @@ REASONS.forEach((r,i)=>{
 });
 reasonPick.querySelector(".chip.on").style.background="#e8590c";
 
+document.getElementById("burstMode").onchange=e=>{
+  if(!e.target.checked){ window.__burstCount=0; const b=document.getElementById("burstBar"); b&&b.remove(); }
+};
+
 /* 拍照并压缩 */
 const imgInput=document.getElementById("imgInput");
 imgInput.onchange=()=>{
@@ -174,6 +178,29 @@ document.getElementById("addForm").onsubmit=async e=>{
   }
   if(state.pickedImg){ await imgPut(m.id, state.pickedImg); state.pickedImg=null; }
   state.mistakes.push(m); save();
+
+  const burst=document.getElementById("burstMode").checked;
+  if(burst){
+    // 连续录入：科目/章节/错因/知识点保留，只清照片、备注
+    const pv=document.getElementById("shotPreview"); pv.hidden=true; pv.src="";
+    imgInput.value="";
+    document.getElementById("shotHint").textContent="📷 继续拍下一张 / 点此选图";
+    document.getElementById("noteInput").value="";
+    window.__burstCount=(window.__burstCount||0)+1;
+    let bar=document.getElementById("burstBar");
+    if(!bar){ bar=document.createElement("div"); bar.className="burst-bar"; bar.id="burstBar";
+      e.target.prepend(bar); }
+    bar.innerHTML="连续录入中 · 已录 "+window.__burstCount+' 道 · <span style="text-decoration:underline" id="burstEnd">点此结束</span>';
+    document.getElementById("burstEnd").onclick=()=>{
+      document.getElementById("burstMode").checked=false; window.__burstCount=0;
+      bar&&bar.remove(); showView("today");
+    };
+    toast("第 "+window.__burstCount+" 道已保存，点虚线框拍下一张");
+    const shot=document.querySelector(".shot");
+    shot.scrollIntoView({behavior:"smooth",block:"center"});
+    shot.classList.remove("pulse"); void shot.offsetWidth; shot.classList.add("pulse");
+    return;
+  }
   e.target.reset();
   const pv=document.getElementById("shotPreview"); pv.hidden=true; pv.src="";
   document.getElementById("shotHint").textContent="📷 拍照 / 点此选图";
