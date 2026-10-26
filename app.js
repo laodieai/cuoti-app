@@ -3,7 +3,7 @@ const DAY = 86400000;
 const STORE_KEY = "cuoti_b8x_state_v1";
 
 let state = loadState();
-function defaultState(){ return { mistakes:[], gaps:[3,14], pickedImg:null }; }
+function defaultState(){ return { mistakes:[], gaps:[3,14], pickedImg:null, customTopics:{} }; }
 function loadState(){
   try{ const s = JSON.parse(localStorage.getItem(STORE_KEY)); if(s&&s.mistakes) return s; }catch(e){}
   return defaultState();
@@ -90,12 +90,18 @@ function fillChapters(){
   const sel=document.getElementById("chapterSel");
   sel.innerHTML="";
   const dl=document.getElementById("topicList"); dl.innerHTML="";
+  const custom = (state.customTopics && state.customTopics[formSubject]) || [];
   subject().groups.forEach(g=>{
     const og=document.createElement("optgroup"); og.label=g.chapter;
     og.appendChild(new Option(g.chapter, g.chapter));
     sel.appendChild(og);
     g.topics.forEach(t=>dl.appendChild(new Option(t)));
   });
+  if(custom.length){
+    const og=document.createElement("optgroup"); og.label="我自己加过的";
+    custom.forEach(t=>og.appendChild(new Option(t)));
+    dl.appendChild(og);
+  }
   const onChips=subjectPick.querySelectorAll(".chip.on");
   onChips.forEach(c=>c.style.background=subject().color);
 }
@@ -161,6 +167,11 @@ document.getElementById("addForm").onsubmit=async e=>{
     stage:1, nextAt:Date.now()+state.gaps[0]*DAY,
     log:[]
   };
+  const builtin = subject().groups.some(g=>g.topics.includes(m.topic));
+  if(!builtin && m.topic!=="未分类"){
+    state.customTopics[formSubject] = state.customTopics[formSubject] || [];
+    if(!state.customTopics[formSubject].includes(m.topic)) state.customTopics[formSubject].push(m.topic);
+  }
   if(state.pickedImg){ await imgPut(m.id, state.pickedImg); state.pickedImg=null; }
   state.mistakes.push(m); save();
   e.target.reset();
